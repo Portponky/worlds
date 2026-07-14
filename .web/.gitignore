@@ -1,0 +1,4 @@
+# Ignore all files here except specifically allowed ones.
+*
+!.gitignore
+!index.html
