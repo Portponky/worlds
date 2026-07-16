@@ -1,0 +1,78 @@
+<!doctype HTML>
+<html>
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital@0;1&family=Ubuntu:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  <link href="style.css" rel="stylesheet" />
+  <title>Archipelago Doom Worlds Index</title>
+</head>
+<body>
+<div class="footer">
+  <div class="footer-left">Last updated: {last_update}</div>
+  <div class="footer-right"><a href="https://github.com/ArchipelagoDoom/worlds">&crarr; View on GitHub</a></div>
+</div>
+
+<h1>Archipelago Doom Worlds Index</h1>
+<div>
+This is an index of stable, tested APWorlds created for <i>Archipelago Doom 2.0</i>.
+</div>
+
+<h2>Official Worlds</h2>
+<div>
+These are the Beta versions of the Core-Verified worlds. They are included with <i>Archipelago Doom 2.0</i> by default, and thus only need to be installed for Archipelago.
+</div>
+<table>
+<tr>
+<th>World</th>
+<th style="width: 150px">Version</th>
+<th style="width: 103px">Size</th>
+<th style="width: 103px">sha256</th>
+</tr>
+{official_worlds}
+</table>
+
+<h2>User-Created Worlds</h2>
+<div>
+These are additional worlds created by users that can be added to <i>Archipelago Doom 2.0</i>. See the <a href="#installing-worlds">Installing a New World</a> section below for more information.
+</div>
+<table>
+<tr>
+<th>World</th>
+<th style="width: 150px">Version</th>
+<th style="width: 103px">Size</th>
+<th style="width: 103px">sha256</th>
+</tr>
+{user_worlds}
+</table>
+
+<h1 id="installing-worlds">Installing a New World</h1>
+<div>
+<i>Archipelago Doom 2.0</i> uses the same APWorld format as Archipelago itself; the same APWorld file is used both for generating a randomized game through Archipelago, and playing that game with <i>Archipelago Doom</i>.
+</div>
+<div>
+To add a new game to <i>Archipelago Doom</i>:
+<ul>
+  <li>Create a "games" folder in the directory where <i>Archipelago Doom</i> is installed, if it doesn't already exist.</li>
+  <li>Copy the APWorld into that "games" folder.</li>
+  <li>Start the <i>Archipelago Doom Launcher</i>. The newly added world should now appear in the games list.</li>
+</ul>
+</div>
+
+<h1 id="apworld-manager">APWorld Manager</h1>
+<div>
+This index can also be added to the <a href="https://github.com/silasary/Archipelago/releases?q=Manager">APWorld Manager</a>, if you would like to use it to browse for new worlds and updates.
+</div>
+<div>
+To add this index to the APWorld Manager:
+<ul>
+  <li>Open the "host.yaml" file in your Archipelago Installation.</li>
+  <li>Find the <span class="inline-monospace">apworld_manager</span> section.</li>
+  <li>Under <span class="inline-monospace">repositories</span>, add the following line:</li>
+  <ul>
+    <li><span class="inline-monospace">https://archipelagodoom.github.io/worlds/index.json: true</span></li>
+  </ul>
+</ul>
+</div>
+</body>
+</html>

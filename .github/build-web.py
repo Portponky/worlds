@@ -68,6 +68,16 @@ class WorldRevision:
             jsonblob["metadata"]["minimum_ap_version"] = self.ap_version
         return jsonblob
 
+    def size_str(self) -> str:
+        tmpsize = self.size
+        for unit in ("bytes", "KB", "MB", "GB", "TB"):
+            if tmpsize < 1000.0:
+                if tmpsize == self.size:
+                    return f"{tmpsize} {unit}"
+                return f"{tmpsize:.1f} {unit}"
+            tmpsize /= 1024.0
+        return ">1 PB"
+
 
 class WorldMeta:
     full_name: str
@@ -115,23 +125,42 @@ class WorldMeta:
             world_id: {
                 "game": self.ap_name,
                 "description": self.description,
+                "release_url": f"https://archipelagodoom.github.io/worlds/#{self.short_name}",
                 "authors": self.authors
             }
         }
 
+    def authors_str(self) -> str:
+        if len(self.authors) == 0:
+            return "Unknown"
+        if len(self.authors) == 1:
+            return self.authors[0]
+        if len(self.authors) == 2:
+            return f"{self.authors[0]} & {self.authors[1]}"
+        temp = self.authors.copy()
+        temp[-1] = f"& {temp[-1]}"
+        return ", ".join(temp)
+
 
 class World:
+    world_type: str
     world_id: str
     revisions: list[WorldRevision]
     meta: WorldMeta
 
     def __init__(self, path: Path):
+        self.world_type = "Official" if str(path.parent).endswith("Official") else "User"
         self.world_id = path.stem
 
         procres = procrun(["git", "log", "--pretty=tformat:%h", "--", str(path)],
                           capture_output=True, text=True, check=True)
         self.revisions = [WorldRevision(path, rev) for rev in procres.stdout.splitlines()]
         self.meta = WorldMeta(path)
+
+    def get_index_data(self) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        worlds = [revision.as_indexed_world(self.world_id) for revision in self.revisions]
+        metadata = self.meta.as_indexed_meta(self.world_id)
+        return (worlds, metadata)
 
 
 def sort_worlds(path: Path) -> tuple[int, str]:
@@ -147,13 +176,60 @@ def create_index_file(worlds = list[World]) -> None:
     }
 
     for w in worlds:
-        for revision in w.revisions:
-            index["worlds"].append(revision.as_indexed_world(w.world_id))
-        index["meta"].update(w.meta.as_indexed_meta(w.world_id))
+        worlds, meta = w.get_index_data()
+        index["worlds"].extend(worlds)
+        index["meta"].update(meta)
 
     with open(DESTPATH / "index.json", "w") as outputfile:
         outputfile.write(json.dumps(index, indent=2))
     print(f"Index file created at '{DESTPATH / 'index.json'}'.") 
+
+
+def create_web_page(worlds = list[World]) -> None:
+    with open(DESTPATH / "template.html", "r") as tempfile:
+        template = tempfile.read()
+
+    def format_rows(subworlds = list[World]) -> str:
+        tablerow_templates = {
+            "latest": '''<tr id="{short_name}">
+              <td>{ap_name} <a class="section" href="#{short_name}">&#x1f517;</a>
+                <div class="subtext">Authors: {authors}</div></td>
+              <td><a href="{url}">{version}</a>
+                <div class="subtext">(Latest Version)</div></td>
+              <td>{size}</td>
+              <td class="hash" title="{sha256}">{sha256}</td>
+              </tr>''',
+            "history": '''<tr>
+              <td></td>
+              <td><a href="{url}">{version}</a></td>
+              <td>{size}</td>
+              <td class="hash" title="{sha256}">{sha256}</td>
+              </tr>'''
+        }
+
+        rows = []
+        for world in subworlds:
+            first = True
+            for revision in world.revisions:
+                template = tablerow_templates["latest" if first else "history"]
+                row = template.format(short_name=world.meta.short_name,
+                                      ap_name=world.meta.ap_name,
+                                      authors=world.meta.authors_str(),
+                                      url=revision.url,
+                                      version=revision.world_version,
+                                      size=revision.size_str(),
+                                      sha256=revision.hash_sha256)
+                rows.append(row)
+                first = False
+
+        return "\n".join(rows)
+
+    with open(DESTPATH / "index.html", "w") as outputfile:
+        output = template.format(last_update=datetime.utcnow().strftime("%-d-%b-%Y %H:%M:%S UTC"),
+                                 official_worlds=format_rows([w for w in worlds if w.world_type == "Official"]),
+                                 user_worlds=format_rows([w for w in worlds if w.world_type != "Official"]))
+        outputfile.write(output)
+    print(f"HTML file created at '{DESTPATH / 'index.html'}'.") 
 
 
 if __name__ == "__main__":
@@ -165,8 +241,8 @@ if __name__ == "__main__":
     BASEPATH = Path(arguments.source)
     DESTPATH = Path(arguments.dest)
 
-    worlds = sorted(BASEPATH.rglob("*.apworld"), key=sort_worlds)
-    worlds = [World(worldpath) for worldpath in worlds]
+    worlds = sorted([World(worldpath) for worldpath in BASEPATH.rglob("*.apworld")], key=lambda k: k.world_id)
 
     create_index_file(worlds)
+    create_web_page(worlds)
 
