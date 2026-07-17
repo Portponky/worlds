@@ -168,7 +168,7 @@ def sort_worlds(path: Path) -> tuple[int, str]:
     return (-1 if str(path.parent).endswith("Official") else 0, path.stem)
 
 
-def create_index_file(worlds = list[World]) -> None:
+def create_index_file(worlds: list[World]) -> None:
     index = {
         "index_version": 1,
         "worlds": [],
@@ -185,15 +185,20 @@ def create_index_file(worlds = list[World]) -> None:
     print(f"Index file created at '{DESTPATH / 'index.json'}'.") 
 
 
-def create_web_page(worlds = list[World]) -> None:
+def create_web_page(worlds: list[World]) -> None:
+    with open(BASEPATH / "wadfiles.json", "r") as jsonfile:
+        wadfiles = json.loads(jsonfile.read())
     with open(DESTPATH / "template.html", "r") as tempfile:
         template = tempfile.read()
 
-    def format_rows(subworlds = list[World]) -> str:
+    def get_wad_file(shortname: str) -> str:
+        return "" if shortname not in wadfiles else f'<a href="{wadfiles[shortname]}">WAD Files</a> &horbar; ' 
+
+    def format_rows(subworlds: list[World]) -> str:
         tablerow_templates = {
             "latest": '''<tr id="{short_name}">
               <td>{ap_name} <a class="section" href="#{short_name}">&#x1f517;</a>
-                <div class="subtext">Authors: {authors}</div></td>
+                <div class="subtext">{wadfiles}Authors: {authors}</div></td>
               <td><a href="{url}">{version}</a>
                 <div class="subtext">(Latest Version)</div></td>
               <td>{size}</td>
@@ -218,7 +223,8 @@ def create_web_page(worlds = list[World]) -> None:
                                       url=revision.url,
                                       version=revision.world_version,
                                       size=revision.size_str(),
-                                      sha256=revision.hash_sha256)
+                                      sha256=revision.hash_sha256,
+                                      wadfiles=get_wad_file(world.meta.short_name))
                 rows.append(row)
                 first = False
 
