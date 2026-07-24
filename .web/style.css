@@ -22,6 +22,9 @@ body {
 .footer-left  { float: left;  margin: 0; }
 .footer-right { float: right; margin: 0; }
 
+.footer-left .checkbox { font-size: 12pt; position: absolute; top: 0.3em;   }
+.footer-left .subtext  { font-size: 9pt;  position: absolute; bottom: 0.5em; }
+
 @media screen and (max-width: 900px) {
   .footer { display: none; }
   body { margin: 1em; }

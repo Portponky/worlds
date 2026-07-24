@@ -6,10 +6,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital@0;1&family=Ubuntu:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
   <link href="style.css" rel="stylesheet" />
   <title>Archipelago Doom Worlds Index</title>
+  <script defer type="text/javascript" src="script.js"></script>
 </head>
-<body>
+<body onload="update_versions(document.getElementById('toggle-all-versions'))">
 <div class="footer">
-  <div class="footer-left">Last updated: {last_update}</div>
+  <div class="footer-left">
+    <div class="checkbox">
+      <input type="checkbox" id="toggle-all-versions" value="Show" onchange="update_versions(this)">
+      <label for="toggle-all-versions"> Show All Versions</label>
+    </div>
+    <div class="subtext">Last updated: {last_update}</div>
+  </div>
   <div class="footer-right"><a href="https://github.com/ArchipelagoDoom/worlds">&crarr; View on GitHub</a></div>
 </div>
 
